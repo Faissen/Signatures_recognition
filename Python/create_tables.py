@@ -1,13 +1,20 @@
 import psycopg2 # PostgreSQL database adapter for Python
+from dotenv import load_dotenv # To load environment variables from a .env file
+import os # To access environment variables
 
+# Loads environment variables from .env file 
+load_dotenv()
 # Establishes a connection to PostgreSQL
 # Make sure the database already exists (e.g., signatures_db)
-connection = psycopg2.connect(
-    host="localhost",
-    database="signatures_db",
-    user="postgres",
-    password="your_password"
-)
+def get_connection():
+    """ Creates a secure PostgreSQL connection using environment variables. """ 
+    return psycopg2.connect( 
+        host=os.getenv("DB_HOST"), 
+        database=os.getenv("DB_NAME"), 
+        user=os.getenv("DB_USER"), 
+        password=os.getenv("DB_PASSWORD"), 
+        port=os.getenv("DB_PORT") 
+        )
 
 # Creates a cursor object to interact with the database
 cursor = connection.cursor()
