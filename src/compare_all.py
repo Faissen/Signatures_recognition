@@ -1,6 +1,6 @@
 import os # For file path operations
 # Import utility functions
-from signature_utils import extract_features, compare_descriptors 
+from src.signature_utils import extract_features, compare_descriptors 
 
 # Path to the folder containing all stored signatures
 DATABASE_PATH = "database"
