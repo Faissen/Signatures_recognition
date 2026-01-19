@@ -17,7 +17,7 @@ FONT_PATH = "C:/Windows/Fonts/seguisbi.ttf"
 # Function to add noise and distortions to the image
 def add_noise(img):
 # Convert to numpy array to manipulate pixels
-    arr = np.array(img).astype(np.int16) 
+    arr = np.asarray(img, dtype=np.int16) 
     
     # Gaussian noise  is added with 70% probability
     if random.random() < 0.7:
