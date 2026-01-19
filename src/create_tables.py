@@ -18,6 +18,7 @@ def create_tables():
             image_path TEXT NOT NULL,
             descriptors BYTEA NOT NULL,
             created_at TIMESTAMP DEFAULT NOW()
+            quality BOOLEAN DEFAULT TRUE
         );
     """)
 
