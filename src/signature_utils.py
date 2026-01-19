@@ -21,13 +21,10 @@ def extract_features(image_path):
     if descriptors is None:
         descriptors = np.zeros((0, 32), dtype=np.uint8)
     #keypoints are the points of interest, descriptors are the feature vectors
-    # If ORB fails to find descriptors, warn about image quality
-    if descriptors is None or len(descriptors) == 0:
-        raise ValueError(
-            f"Image '{image_path}' has insufficient quality or contrast for feature extraction."
-        )
+    # Quality check 
+    quality_good = len(descriptors) > 20
     
-    return keypoints, descriptors
+    return keypoints, descriptors, quality_good
 
 
 def compare_descriptors(desc1, desc2):
