@@ -4,8 +4,10 @@ from faker import Faker # For generating random names
 import numpy as np # For numerical operations
 import random # For generating random positions and font sizes
 import os # For file path operations
+import json # For saving metadata
 
 fake = Faker() # generates random names
+name_map = {} # Dictionary to map filenames to names
 
 # Directory to save generated signatures
 OUTPUT_DIR = "generated_signatures"
@@ -16,7 +18,7 @@ FONT_PATH = "C:/Windows/Fonts/seguisbi.ttf"
 
 # Function to add noise and distortions to the image
 def add_noise(img):
-# Convert to numpy array to manipulate pixels
+    # Convert to numpy array to manipulate pixels
     arr = np.asarray(img, dtype=np.int16) 
     
     # Gaussian noise  is added with 70% probability
@@ -74,5 +76,14 @@ for i in range(200):
     name = fake.name() # random name 
     filename = f"signature_{i+1}.png" # Filename for the signature image
     generate_signature(name, filename) # Generate and save the signature image
+    name_map[filename] = name # Map filename to the generated name
+
+# Save the name mapping to a JSON file
+# Encoding to ensure UTF-8 support, mode w for writing
+with open("signature_names.json", "w", encoding="utf-8") as f:
+    # indent for readability, ensure_ascii for UTF-8 support
+    json.dump(name_map, f, indent=4, ensure_ascii=False) 
+
+print("Saved name mapping to signature_names.json")
 
 print("200 random signatures generated successfully!")
