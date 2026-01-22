@@ -4,5 +4,6 @@ from identify_signature import compare_all_signatures
 # Define the path to the signature to be checked
 result = compare_all_signatures("../signatures_to_test/signature_to_check.png") 
 
-# Print the top 3 matches
-print(result["top_3_matches"])
+# Print the top 3 matches, name, match = %
+for name, score in result["top_3_matches"]:
+    print(f"{name}: match = {round(score,1)}%")

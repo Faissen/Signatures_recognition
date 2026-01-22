@@ -50,6 +50,6 @@ def compare_descriptors(desc1, desc2):
     # Good matches threshold (empirical)
     good_matches = [m for m in matches if m.distance < 50]
 
-    # Similarity = ratio of good matches to total matches
-    return len(good_matches) / len(matches)
+    # Similarity = ratio of good matches to total matches, converted to percentage
+    return (len(good_matches) / len(matches)) * 100
 

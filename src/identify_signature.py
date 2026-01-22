@@ -1,5 +1,6 @@
 import os
 from signature_utils import extract_features, compare_descriptors
+import json # To handle JSON files
 
 def compare_all_signatures(query_signature_path, database_path="../generated_signatures"):
     """
@@ -43,8 +44,21 @@ def compare_all_signatures(query_signature_path, database_path="../generated_sig
     # 4. Get the top 3 matches
     top_3 = results[:3]
 
+    # Path for JSON file
+    # Define the path to the JSON mapping file
+    mapping_path = os.path.join(os.path.dirname(__file__), "..", "signature_names.json")
+    # Get absolute path
+    mapping_path = os.path.abspath(mapping_path)
+
+    # Read the mapping file
+    with open(mapping_path, "r", encoding="utf-8") as f:
+        name_map = json.load(f)
+
+    # Replace filenames with real names
+    top_3_named = []
+    for filename, score in top_3:
+        owner = name_map.get(filename, "Unknown") # Default to "Unknown" if not found
+        top_3_named.append((owner, score))
+
     return {
-        "status": "ok",
-        "top_3_matches": top_3,
-        "all_results": results
-    }
+    "top_3_matches": top_3_named}
