@@ -1,17 +1,18 @@
 import os # For file path operations
 # Import utility functions
+from src.db_utils import get_connection
 from src.signature_utils import extract_features, compare_descriptors 
 
 # Path to the folder containing all stored signatures
-DATABASE_PATH = "database"
+DATABASE_PATH = "signatures_db"
 
 # Signature we want to compare against the database
-query_signature = "signature_to_check.png"
+query_signature = "generated_signatures/signature_to_check.png"
 
 # Extract features from the query signature
 # _ means we ignore the keypoints variable
 # query_desc will hold the descriptors of the query signature
-_, query_desc = extract_features(query_signature)
+_, query_desc, query_quality = extract_features(query_signature)
 
 results = [] # To store similarity results
 
@@ -28,7 +29,7 @@ for filename in os.listdir(DATABASE_PATH):
         continue # Skip to next file
 
     # Extract features from the database signature
-    _, db_desc = extract_features(file_path)
+    _, db_desc, db_quality = extract_features(file_path)
 
     # Compare descriptors and compute similarity
     similarity = compare_descriptors(query_desc, db_desc)
