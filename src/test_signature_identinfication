@@ -1,0 +1,8 @@
+# Import the function to compare signatures
+from identify_signature import compare_all_signatures
+
+# Define the path to the signature to be checked
+result = compare_all_signatures("signature_to_check.png") 
+
+# Print the top 3 matches
+print(result["top_3_matches"])
