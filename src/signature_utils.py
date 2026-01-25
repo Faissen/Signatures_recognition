@@ -4,6 +4,11 @@ import os
 import json
 
 from skimage.metrics import structural_similarity as ssim
+import pytesseract
+
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+import difflib # para comparação de strings
 
 # 1. NORMALIZE SIGNATURE
 def normalize_signature(image_path):
@@ -158,14 +163,88 @@ def is_cursive(img):
     # Assinaturas cursivas tendem a ter 1–3 contornos grandes
     return len(contours) <= 3
 
+def extract_text_from_image(image_path):
+    img = cv2.imread(image_path)
+    if img is None:
+        return ""
+
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # aumentar contraste
+    gray = cv2.normalize(gray, None, 0, 255, cv2.NORM_MINMAX)
+
+    # remover ruído
+    gray = cv2.GaussianBlur(gray, (1, 1), 0)
+
+    # binarizar forte
+    _, th = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+    # dilatar ligeiramente para engrossar letras
+    kernel = np.ones((2, 2), np.uint8)
+    th = cv2.dilate(th, kernel, iterations=1)
+
+    # OCR com modo de linha única
+    text = pytesseract.image_to_string(th, config="--psm 7 -l eng")
+
+    return text.strip()
+
+
+def compare_by_ocr(query_signature_path, name_map):
+    """
+    If the signature is typed text (like 'Mark Stevens'),
+    OCR will detect the name and match directly.
+    """
+
+    text = extract_text_from_image(query_signature_path)
+    if not text:
+        return None  # OCR falhou
+
+    text_clean = text.lower().replace("\n", " ").strip()
+
+    # Procurar nome correspondente na base de dados
+    best_match = None
+    best_score = 0
+
+    for filename, person_name in name_map.items():
+        score = difflib.SequenceMatcher(None, person_name.lower(), text_clean).ratio()
+        if score > best_score:
+            best_score = score
+            best_match = person_name
+
+    # Se a similaridade for aceitável (>= 0.4), devolve o nome
+    if best_score >= 0.6: 
+        return best_match, best_score * 100
+
+    return None
+
+
 # 6. COMPARE ALL SIGNATURES IN DB
 def compare_all_signatures(query_signature_path, database_path="../generated_signatures"):
     """
     Hybrid signature comparison:
-    - If signature is cursive → use global SSIM + global template matching
-    - If signature is non-cursive → use letters + SSIM
+    - First try OCR (for typed signatures)
+    - If OCR fails, fallback to visual matching
     """
 
+    # Load name mapping
+    mapping_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "signature_names.json"))
+    with open(mapping_path, "r", encoding="utf-8") as f:
+        name_map = json.load(f)
+
+    # 1. Tentar OCR primeiro
+    ocr_match = compare_by_ocr(query_signature_path, name_map)
+    if ocr_match:
+        name, score = ocr_match
+        return {"top_3_matches": [(name, score)]}
+    
+    # Se o OCR devolveu texto mas não encontrou nome, não usar método visual
+    if text := extract_text_from_image(query_signature_path):
+        if any(c.isalpha() for c in text):
+            # É texto, mas não corresponde a ninguém
+            return {"top_3_matches": [("Texto detectado mas não corresponde a nenhum nome", 0)]}
+
+
+    # 2. Se OCR falhar, usar o método visual (o teu pipeline atual)
     query_img, quality = extract_features(query_signature_path)
     if not quality:
         return {"status": "error", "message": "Signature quality too low."}

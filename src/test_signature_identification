@@ -8,7 +8,10 @@ if __name__ == "__main__":
     test_images = [
         "../signatures_to_test/signature_to_check.png",
         "../signatures_to_test/test_david_bradford.png",
-        "../signatures_to_test/test_mark_stevens.png"
+        "../signatures_to_test/test_mark_stevens.png",
+        "../signatures_to_test/test_mark_stevens2.png",
+        "../signatures_to_test/test_eric_miller.png",
+        "../signatures_to_test/test_eric_miller2.png"
     ]
 
     # Loop through test images list
